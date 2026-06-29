@@ -1,0 +1,920 @@
+[
+  {
+    "id": 1,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - planificación y reparto",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Indique qué reparto de iteraciones a hebras es correcto suponiendo **5** hebras y la cláusula `schedule(monotonic:static,2)`.",
+    "options": [
+      "iter\n        0\n        1\n        2\n        3\n        4\n        5\n        6\n        7\n        8\n\n          hebra\n      0\n        0\n        1\n        1\n        2\n        2\n        3\n        3\n        0",
+      "iter\n        0\n        1\n        2\n        3\n        4\n        5\n        6\n        7\n        8\n\n          hebra\n      0\n        0\n        1\n        1\n        2\n        2\n        3\n        3\n        4",
+      "iter\n        0\n        1\n        2\n        3\n        4\n        5\n        6\n        7\n        8\n\n          hebra\n      0\n        1\n        2\n        3\n        4\n        0\n        1\n        2\n        3",
+      "iter\n        0\n        1\n        2\n        3\n        4\n        5\n        6\n        7\n        8\n\n          hebra\n      4\n        4\n        3\n        3\n        2\n        2\n        1\n        1\n        1"
+    ],
+    "answer": 1,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'b':\n  Hay 5 hebras y la planificación 'static' reparte las iteraciones en bloques de tamaño 'chunk' en round-robin, por lo que se no puede ser la 'a' (ya que se salta la hebra 4 en la distribución round-robin), ni la 'c' (ya que el chunk es de tamaño 2), ni la 'd' (ya que no se empieza a repartir en la hebra 0 y tampoco sigue round-robin).\n    .",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 1"
+  },
+  {
+    "id": 2,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Qué devuelve la función `omp_get_wtime()` de OpenMP?",
+    "options": [
+      "El tiempo transcurrido del reloj en segundos.",
+      "Tiempo transcurrido en segundos desde la anterior llamada a la misma función.",
+      "La marca de tiempo (timestamp) del instante en que se llama a la función.",
+      "Ninguna otra respuesta es correcta."
+    ],
+    "answer": 2,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'c'.",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 2"
+  },
+  {
+    "id": 3,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Dada la siguiente sección de código:\n```c\nint i,j;\ndouble **M, *v1, *v2;\n// Inicializaciones M y v1 ...\n#pragma omp parallel private(j)\nfor(i=0; i < N; i++)\n{\n    #pragma omp for\n    for (j=0; j < N; j++)\n        #pragma omp atomic\n            v2[i] += M[i][j] * v1[j];\n}\n```\nSuponiendo que todas las posiciones de `M` y `v1` se inicializan a 1, responda dos cuestiones: la primera es si este código paralelo es eficiente y la segunda qué contendrá el vector `v2` al terminar la ejecución.",
+    "options": [
+      "El código es **eficiente** y el vector `v2` contiene el resultado **correcto** de multiplicar la matriz `M` (NxN) por el vector `v1` (Nx1).",
+      "El código es **no es eficiente** y el vector `v2` contiene el resultado **correcto** de multiplicar la matriz `M` (NxN) por el vector `v1` (Nx1).",
+      "El código es **eficiente** y el vector `v2` contiene un resultado **indefinido**.",
+      "El código es **no es eficiente** y el vector `v2` contiene un resultado **indefinido**."
+    ],
+    "answer": 3,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'd':\n    Al tener la directiva '#pragma omp atomic' solo puede entrar una hebra a esa sección de código cada vez por lo que no es eficiente. Además la variable 'i' es compartida por todas las hebras por lo que se pueden producir condiciones de carrera y el resultado será indefinido.",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 3"
+  },
+  {
+    "id": 4,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "Optimización - memoria, localidad y compilador",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Dado el siguiente código, ¿qué habría que cambiar para que el acceso a los elementos del struct `d` se realizara de manera óptima?\n```c\nstruct position {\n    int x;\n    int y;\n};\n\nstruct data {\n    int acceleration [1000];\n    int velocity [1000];\n    position pos[500];\n} d;\n\n...\n\nfor (i=0; i<1000; ++i){\n    d.velocity[i] = get_velocity();\n    d.acceleration[i] = get_acceleration();\n    d.pos[i].x = get_x();\n    d.pos[i].y = get_y();\n}\n```",
+    "options": [
+      "Se deberían crear 4 bucles, uno por cada elemento al que se está accediendo.",
+      "El acceso a los arrays `velocity` y `acceleration` se debería hacer en dos bucles diferentes.",
+      "Se deberían crear tres bucles: uno para acceder al array `acceleration`, otro para el array `velocity` y otro para el array de structs `position`.",
+      "el acceso a los elementos `x` e `y` del struct `position` debería hacerse en un bucle diferente."
+    ],
+    "answer": 2,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'c'.\n  Dado que los arrays 'acceleration' y 'velocity' están en bloques contiguos de memoria (los arrays completos de forma concurrente respectivamente), lo mejor será tener un bucle distinto para cada uno para aprovechar la localidad. El array 'position' sin embargo no tiene contiguas todas las 'x' primero y luego todas las 'y' sino que están intercaladas (ya que el struct 'position' así lo determina), por lo que lo mejor será utilizar un único bucle para la misma posición ('d.pos[i]') y rellenar en este bucle ambas componentes",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 4"
+  },
+  {
+    "id": 5,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - planificación y reparto",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Dado el siguiente código, ¿qué pasaría si `n` tuvuese un valor **menor** al de la variable **n_threads**?\n```c\nfloat sumalocal=0;\nint n_threads = omp_get_max_threads();\n\n#pragma omp parallel firstprivate(sumalocal) if (n<n_threads) num_threads(8)\n{\n    #pragma omp for schedule(static)\n        for (i=0; i<64; i++)\n            sumalocal += v[i];\n\n    #pragma atomic\n        suma += sumalocal;\n}\n```",
+    "options": [
+      "Ninguna de las anteriores",
+      "Habría un error de compilación ya que hay que especificar el número de hebras de la región paralela.",
+      "La región paralela se ejecutaría creando 8 hebras.",
+      "La región paralela se ejecutaría creando tantas hebras como valor tenga `n`."
+    ],
+    "answer": 2,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'c':\n    El condicional 'if (n",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 5"
+  },
+  {
+    "id": 6,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "A continuación se muestra el código del programa hebras.c. ¿Cuál de las siguientes afirmaciones es **verdadera**?\n```c\n#include\n#ifdef _OPENMP\n    #include\n#else\n    #define omp_get_num_threads() 1\n    #degine omp_set_num_threads(n_threads) 3\n#endif\n\nvoid main()\n{\n    int n_threads = 3;\n    omp_set_num_threads(n_threads);\n    #pragma omp parallel\n        #pragma omp single\n            printf(\"%d hebra/s\", omp_get_num_threads());\n}\n```",
+    "options": [
+      "Ninguna respuesta es la correcta",
+      "Tras el compilado `gcc hebras.c -o hebras`, no sale nada porque la directiva `single` es como si no existiera.",
+      "Tras el compilado `gcc hebras.c -o hebras`, la salida al ejecutar el programa es \"3 hebra/s\".",
+      "Tras el compilado `gcc -fopenmp hebras.c -o hebras`, la salida al ejecutar el programa es \"3 hebra/s\"."
+    ],
+    "answer": 3,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'd':\n    La opción 'b' no puede ser ya que al no haber especificado '-fopenmp' en la compilación se ignoran las directivas de OpenMP y se toman las definiciones alternativas dadas en la cabecera por lo que sí habrá salida (aunque no paralelismo). La opción 'c' tampoco puede ser ya que la definición alternativa de la función 'omp_get_num_threads()' es que devuelva uno por lo que la salida sería \"1 hebra/s\". Finalmente la opción 'd' sí ejecuta el código de forma paralela con 3 hebras por lo que la salida será \"3 hebra/s\" (asi que tampoco es la 'a').",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 6"
+  },
+  {
+    "id": 7,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Cuángo valdrá `n` al terminar la región paralela?\n```c\nint n = 2;\n#pragma omp parallel for reduction(*n)\nfor(int i = 1; i < 4; i++)\n    n *= i;\n```",
+    "options": [
+      "12",
+      "6",
+      "2",
+      "4"
+    ],
+    "answer": 0,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'a':\n    Recordemos que la cláusula 'reduction(*n)' inicializa 'n' a 1 en cada hebra y multiplica el resultado final de 'n' de cada hebra y ese resultado lo multiplica también por el valor inicial de 'n' (que es 2). El bucle va de 1 a 3 por lo que la operación será: 1 x 2 x 3 x 2 = 12",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 7"
+  },
+  {
+    "id": 8,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "En el código adjunto el valor de `Xinit` puede no estar correctamente disponible para otras hebras. ¿Qué directiva añadiría para que funcionase correctamente?\n```c\nint Xinit, Xlocal;\n#pragma omp parallel private (Xlocal)\n{\n    #pragma omp master\n    {\n        Xinit=10;\n    }\n    Xlocal=Xinit;\n}\n```",
+    "options": [
+      "No insertaría nada, el código funciona bien siempre.",
+      "Añadiría la directiva `#pragma omp barrier` antes de la línea 8.",
+      "Añadiría la directiva `#pragma omp barrier` después de la línea 8.",
+      "Añadiría la directiva `#pragma omp single` después de la línea 8."
+    ],
+    "answer": 1,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'b':\n    El problema que presenta el código es que alguna hebra puede llegar a la asignación 'Xlocal=Xinit' antes de que la hebra master inicialice 'Xinit' a 10. Por tanto al poner una barrera antes de la asignación que comentábamos obligamos a que 'master' haya terminado la inicialización evitando la condición de carrera.",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 8"
+  },
+  {
+    "id": 9,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "Optimización - memoria, localidad y compilador",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Dada la siguiente multiplicación de matrices, ¿Cuál sería el orden correcto de los bucles para mejorar la localidad de los accesos?\n```c\nfor(i=0; i<100; ++i)\n    for(j=0; j<100; ++j)\n        for(k=0; k<100; ++k)\n            a[i][j] += b[i][k] * c[k][j];\n```",
+    "options": [
+      "No hace falta permutar ningún bucle. Tal y como está se accede de la forma más óptima posible.",
+      "i, k, j.",
+      "k, j, i.",
+      "k, i, j."
+    ],
+    "answer": 1,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'b':\n    Recordemos que, por cómo se almacenan los arrays en memoria, las filas de las matrices (el primer índice que se especifica en los accesos) están en posiciones concurrentes en memoria. Es por esto que se prioriza fijar este primer índice y desplazar el segundo para explotar la localidad. En este caso, la sentencia 'a[ i ][ j ] += b[ i ][ k ] * c[ k ][ j ];' tiene en los primeros índices las variables 'i', 'i' y 'k' respectivamente (marcados en negrita). Por ello el orden será i, k, j. ('i' aparece 2 veces como primer índice, 'k' una vez y 'j' ninguna).",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 9"
+  },
+  {
+    "id": 10,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "Optimización - memoria, localidad y compilador",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿A cuál de las siguientes variables no se le puede asignar su valor en tiempo de compilación debido a la ambigüedad de código?\n```c\nfloat r, c;\nfloat pi = 3.1416;\nvoid circunferencia(float *v) {\n    r = 3.0;\n    *v = 15;\n    c = 2 * pi * r;\n}\n```",
+    "options": [
+      "c=18.8496 (resultado de 2\\*3.1416\\*3)",
+      "pi=3.1416",
+      "r=3.0",
+      "Ninguna de las variables puede ser asignada."
+    ],
+    "answer": 0,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'a':\n    El compilador puede asignar todas las variables excepto la 'c' ya que '*v' es un puntero y podría apuntar a 'r' o a 'pi' modificando su valor y por tanto el resultado de la operación 2*pi*r.",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 10"
+  },
+  {
+    "id": 11,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "Optimización - memoria, localidad y compilador",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Supongamos el siguiente bucle que debe ser desenrollado para optimizar el código. Se sabe que `N` es múltiplo de 4. Indique cuántos saltos contendrá el código desenrollado si el contador del bucle queremos que se incremente de 2 en 2 en la mayor parte del bucle. Considere `a`, `b` y `c` vectores ya incializados con valores reales.\n```c\nfor(int i = 0; i<N/2; i++)\n    a[i] += b[i] * c[i];\n```",
+    "options": [
+      "(N/2)-1",
+      "N/2",
+      "(N/4)-1",
+      "N/4"
+    ],
+    "answer": 2,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'c':\n    Al incrementar de 2 en 2 en índice 'i' se reducirán a la mitad las iteraciones, por lo que ahora serán N/4. Además, en la implementación del bucle 'for' se salta en todas las iteraciones excepto en la última (si está implementado con salto hacia atrás) o en la primera (si está implementado con salto hacia adelante). En cualquier caso, el número de saltos será el número de iteraciones menos uno, es decir, (N/4) - 1.",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 11"
+  },
+  {
+    "id": 12,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "Entorno de prácticas - cluster",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Cuántos **cores físicos** tienes un **único zócalo** de CPU (socket) en **un único equipo de la partición ac** (la formada por tres equipos: atcgrid[1-3]).",
+    "options": [
+      "2.",
+      "8.",
+      "6.",
+      "36."
+    ],
+    "answer": 2,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'c'. (Aparece en los resúmenes)",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 12"
+  },
+  {
+    "id": 13,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - planificación y reparto",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Indique cuál de las siguientes afirmaciones sobre el **chunk** utilizado con la cláusula `schedule` es cierta:",
+    "options": [
+      "Sólo se puede fijar su valor a través de las variables de entorno.",
+      "Indica la granularidad de la distribución de las iteraciones.",
+      "Su valor por defecto cuando se utiliza con `dynamic` es 2.",
+      "Únicamente se puede utilizar para las formas de asignación de `static` y `dynamic`"
+    ],
+    "answer": 1,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'b':\n    La opción 'a' no puede ser ya que se puede especificar también con cláusulas. La opción 'c' tampoco porque por defecto con 'dynamic' vale 1. Tampoco puede ser la 'd' porque se puede utilizar también para 'guided'. Por último la opción 'b' da una descripción bastante acertada.",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 13"
+  },
+  {
+    "id": 14,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Qué valores imprimiría el siguiente código tanto dentro como fuera del bloque estructurado si previamente se ha modificado la variable de entorno como `export OMP_NUM_THREADS=4`?\n```c\n#pragma omp parallel num_threads(3)\n{\n    #pragma omp single\n    printf(\"DENTRO: %d\\n\", omp_get_max_threads());\n}\nprintf(\"FUERA: %d\\n\", omp_get_max_threads());\n```",
+    "options": [
+      "\"DENTRO: 3\" y \"FUERA: 1\".",
+      "\"DENTRO: 4\" y \"FUERA: 1\".",
+      "\"DENTRO: 4\" y \"FUERA: 4\".",
+      "\"DENTRO: 1\" y \"FUERA: 1\"."
+    ],
+    "answer": 2,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'c'.",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 14"
+  },
+  {
+    "id": 15,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - planificación y reparto",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Teniendo en cuenta las líneas de caché, ¿qué afirmación es correcta sobre la velocidad de acceso a un dato almacenado en memoria?",
+    "options": [
+      "Disminuye la velocidad de acceso cuando está repartido entre varias líneas.",
+      "Disminuye la velocidad de acceso cuando está contenido al final de una línea.",
+      "Aumenta la velocidad de acceso cuando está repartido entre varias líneas.",
+      "Disminuye la velocidad de acceso cuando está contenido al principio de una línea."
+    ],
+    "answer": 0,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'a':\n    Por el funcionamiento de la caché las líneas se tienen que cargar una a una por lo que si está en varias habrá que cargar todas y se tardará más. La opción 'b' no puede ser porque como se cargan líneas enteras da igual la posición que ocupe dentro de la línea el dato a leer. La 'c' es lo opuesto a la 'a' por lo que tampoco es y la 'd' no puede ser por el mismo motivo que no podía ser la 'b'.",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 15"
+  },
+  {
+    "id": 16,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Qué ocurre si llegan 4 hebras a una directiva `sections` que contiene solo 2 secciones de código diferentes (`section`)?",
+    "options": [
+      "Cada sección es ejecutada por 2 hebras pero no a la vez.",
+      "Cada sección es ejecutada por las 4 hebras.",
+      "Cada sección es ejecutada por 2 hebras a la vez.",
+      "Cada sección es ejecutada por solo una de las hebras."
+    ],
+    "answer": 3,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'd'.",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 16"
+  },
+  {
+    "id": 17,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Indique cuales son los principales componentes del lenguaje OpenMP.",
+    "options": [
+      "Funciones, directivas y variables de entorno.",
+      "Directivas, variables compartidas y barreras.",
+      "Ninguna otra respuesta es correcta.",
+      "Variables de entorno, funciones e instrucciones al compilador."
+    ],
+    "answer": 0,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'a'.(Aparece en los resúmenes)",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 17"
+  },
+  {
+    "id": 18,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Indique cuantas veces aparecerá el mensaje \"Hola mundo X\" en el código siguiente al compilar con la orden `gcc -fopenmp ejemplo.c -o ejemplo`. Teniendo en cuenta que \"X\" representará un número entero cualquiera y se ejecuta con 8 hebras.\n```c\n#include \"stdio.h\"\n#include \"omp.h\"\nvoid main()\n{\n    int i=0; n=100;\n    #pragma omp parallel\n    {\n        #pragma omp single\n        printf(\"Hola mundo %d\\n\", i++);\n        #pragma omp for\n        for(i=0; i<n; i++){\n            printf(\"Hola mundo %d\", i);\n        }\n    }\n}\n```",
+    "options": [
+      "18 veces.",
+      "11 veces.",
+      "108 veces.",
+      "101 veces."
+    ],
+    "answer": 3,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'd':\n    Aunque se creen 8 hebras, la región bajo la directiva 'single' solo la ejecuta una hebra. Después el bucle hace las 100 iteraciones (independientemente de qué hebra ejecute qué iteraciones). Por tanto 100 + 1 = 101",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 18"
+  },
+  {
+    "id": 19,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Qué afirmación sobre las cláusulas es correcta?",
+    "options": [
+      "Por defecto, si no utilizamos cláusulas, las variables declaradas fuera de una región paralela son compartidas por las hebras de la región.",
+      "Todas las directivas aceptan algún tipo de cláusula.",
+      "La cláusula `shared` puede ser utilizada con la directiva `single`.",
+      "OpenMP obliga a la utilización de al menos una cláusula con la directiva `parallel`."
+    ],
+    "answer": 0,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'a'.",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 19"
+  },
+  {
+    "id": 20,
+    "bloque": "Prácticas",
+    "tema": "Final bloque práctico",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Dado el siguiente fragmento de código:\n```c\nint i=0, a=5;\n#pragma omp parallel for firstprivate(a)\nfor(i=0; i < 5; i++)\n{\n    a += i;\n}\n```\n\n¿Cuál sería el valor de la variable `a` inicial de cada hebra al comenzar la región paralela y el valor de `a` justo después de la región paralela?",
+    "options": [
+      "5 al comienzo de las hebras e indefinido después de la región paralela.",
+      "5 al comienzo de las hebras y 15 después de la región paralela.",
+      "Indefinido tanto al comienzo de las hebras como fuera de la región paralela.",
+      "5 al comienzo de las hebras y 5 después de la región paralela."
+    ],
+    "answer": 3,
+    "explanation": "Respuesta\n  La respuesta correcta es la opción 'd':\n    Gracias a la cláusula 'firstprivate' se produce una difusión del valor de 'a' a cada hebra y por tanto tienen un valor inicial 'a=5'. Además, como no se ha especificado ninguna cláusula que actualice el valor de 'a' fuera de la región paralela (como 'reduction'), fuera de la región paralela mantiene el valor inicial, 5..",
+    "source": "Examen Final Prácticas 2023-24 · Ejercicio 20"
+  },
+  {
+    "id": 21,
+    "bloque": "Teoría",
+    "tema": "Tema 3 - Memoria, coherencia y consistencia",
+    "subtema": "NUMA, coherencia y directorios",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "En un NUMA con 4 nodos de procesamiento (N0-N3) y con protocolo MSI basado en directorios distribuidos SIN difución, si un bloque está en estado modificado en la caché del nodo 2, ¿cuál de los siguientes es el contenido de la entrada del directorio e memoria para este bloque? (formato: `estado-c0c1c2c3`, conde `ci` es el bit de presencia de la caché `i`, `I` nota inválido, `V` Válido, y `M` nota Modificado)",
+    "options": [
+      "`I-0010`",
+      "`M-0010`",
+      "`V-0010`",
+      "`I-0000`"
+    ],
+    "answer": 0,
+    "explanation": "Respueta\n  La respuesta correcta es la opción 'a':\n    Al estar modificado en la caché 2, el bit de válido en dicha caché está activo. Además, las copias del mismo bloque en cualquier otra caché y en memoria deben estar inválidas, luego la respuesta correcta es 'I-0010'.",
+    "source": "Examen Teoría Tema 3 2023-24 · Ejercicio 1"
+  },
+  {
+    "id": 22,
+    "bloque": "Teoría",
+    "tema": "Tema 3 - Memoria, coherencia y consistencia",
+    "subtema": "Modelos de consistencia y sincronización",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Cuál de los siguientes modelos de consistencia permite mejores tiempos de ejecución?",
+    "options": [
+      "modelo de consistenia de los procesadores ARMv7.",
+      "modelo de consistenia que no garantiza los órdenes `W->W` y `W->R`.",
+      "modelo de consistenia secuencial.",
+      "modelo de consistenia de los procesadores de la línea x86 de Intel."
+    ],
+    "answer": 0,
+    "explanation": "Respueta\n  La respuesta correcta es la opción 'a':\n    El modelo de consistencia de los procesadores ARMv7 es el que permite más relajaciones de los otros tres, tal y como se indica en la Sección 3.3.6. de los apuntes de teoría (ver https://losdeldgiim.github.io/subjects/AC/Temario/Temario.pdf), por lo que permite mejores tienes de ejecución.",
+    "source": "Examen Teoría Tema 3 2023-24 · Ejercicio 2"
+  },
+  {
+    "id": 23,
+    "bloque": "Teoría",
+    "tema": "Tema 3 - Memoria, coherencia y consistencia",
+    "subtema": "NUMA, coherencia y directorios",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Para un multiprocesador NUMA con 8 nodos con 16 GB de memoria por nodo se quiere implementar un protocolo para mantenimiento de coherencia basado en directorio distribuido (sin difusión) para el último nivel de cache y la memoria principal (MP). Suponiendo que un bloque de MP tiene 64 Bytes, ¿cuál es el número de entradas (filas) del subdirectorio de memoria de un nodo (del trozo del directorio de un nodo)?",
+    "options": [
+      "$2^{32}$.",
+      "$2^{28}$.",
+      "Ninguna de las otras respuestas es correcta.",
+      "$2^6$."
+    ],
+    "answer": 1,
+    "explanation": "Respueta\n  La respuesta correcta es la opción 'b':\n    El subdirectorio de memoria de cada nodo tiene tantas entradas por cada bloque de la memoria principal que se hospeda en dicho nodo. Por tanto, el ejercicio se reduce a calcular el número de bloques de memoria hospedados por un nodo. Tenemos una memoria de 16 GB = $2^{34}$ Bytes a repartir en bloques de 64 Bytes = $2^6$ Bytes, luego tenemos ($34 - 6 = 28$) $2^{28}$ bloques de memoria en cada nodo.",
+    "source": "Examen Teoría Tema 3 2023-24 · Ejercicio 3"
+  },
+  {
+    "id": 24,
+    "bloque": "Teoría",
+    "tema": "Tema 3 - Memoria, coherencia y consistencia",
+    "subtema": "NUMA, coherencia y directorios",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "En un Numa con protocolo MSI sin difusión, relacionar la secuencia de paquetes de la figura con uno de los siguientes cambios de estado:\n\n![test](https://github.com/LosDelDGIIM/LosDelDGIIM.github.io/blob/main/subjects/AC/Exámenes/img/GrafoT3.png)",
+    "options": [
+      "Ninguna de las otras respuestas es correcta.",
+      "Inicialmente el bloque está en estado `I` en la caché del procesador (nodo) solicitante, Válido en el directorio de memoria principal, y `S` en las cachés del resto de procesadores (nodos). Al terminar el acceso el bloque queda en estado `M` en la caché del solicitante, Inválido en el directorio de memoria principal y `I` en el resto de cachés.",
+      "Inicialmente el bloque está en estado `S` en la caché del procesador (nodo) solicitante, Válido en el directorio de memoria principal, y `S` en las cachés del resto de procesadores (nodos). Al terminar el acceso el bloque queda en estado `M` en la caché del solicitante, Inválido en el directorio de memoria principal y `I` en el resto de cachés.",
+      "Inicialmente el bloque está en estado `M` en la caché del procesador (nodo) solicitante, Inválido en el directorio de memoria principal, y `S` en las cachés del resto de procesadores (nodos). Al terminar el acceso el bloque queda en estado `M` en la caché del solicitante, Inválido en el directorio de memoria principal y `I` en el resto de cachés."
+    ],
+    "answer": 2,
+    "explanation": "Respueta\n  La respuesta correcta es la opción 'c':\n    Como el nodo $S$ pide el paquete 'PtEx', sabemos que debe tener el bloque en estado 'S', al tenerlo válido pero no con acceso exclusivo al mismo, por lo que desacartamos las opciones 'b' y 'd'. Finalmente, vemos que la opción 'c' se corresponde con todo lo indicado en la figura.",
+    "source": "Examen Teoría Tema 3 2023-24 · Ejercicio 4"
+  },
+  {
+    "id": 25,
+    "bloque": "Teoría",
+    "tema": "Tema 3 - Memoria, coherencia y consistencia",
+    "subtema": "Modelos de consistencia y sincronización",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Cuál de los siguientes códigos usaría para implementar un `unlock()` de un cerrojo con etiqueta para ARMv7?",
+    "options": [
+      "```c\nunlock(int *cl){\n    dmb;    // macro que usa la instrucción máquina dmb de ARMv7\n    (*cl) = 0;\n}\n```",
+      "```c\nunlock(int *cl){\n    dmb;    // macro que usa la instrucción máquina dmb de ARMv7\n    (*cl) = (*cl) + 1;\n}\n```",
+      "```c\nunlock(int *cl){\n    (*cl) = (*cl) + 1;\n    dmb;    // macro que usa la instrucción máquina dmb de ARMv7\n}\n```",
+      "```c\nunlock(int *cl){\n    (*cl) = 0;\n    dmb;    // macro que usa la instrucción máquina dmb de ARMv7\n}\n```"
+    ],
+    "answer": 1,
+    "explanation": "Respueta\n  La respuesta correcta es la opción 'b':\n    Deseamos implementar un cerrojo con etiqueta, luego debemos incrementar el contador de liberación en vez de ponerlo a 0, descartando las opciones 'a' y 'd'. Ahora, debemos tener en cuenta que antes de abrir el cerrojo, debemos garantizar que se completaron todas las instrucciones de acceso a variables compartidas (ya que si no al abrir el cerrojo otro flujo de instrucciones procedería a acceder a ellas), por lo que debemos incluir la instrucción 'dmb' antes de liberar el cerrojo.",
+    "source": "Examen Teoría Tema 3 2023-24 · Ejercicio 5"
+  },
+  {
+    "id": 26,
+    "bloque": "Teoría",
+    "tema": "Tema 3 - Memoria, coherencia y consistencia",
+    "subtema": "NUMA, coherencia y directorios",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "El orden en el que se ven las escrituras en una dirección de memoria en un NUMA con directorio distribuido coincide:",
+    "options": [
+      "Con el orden en el que llegan a la primera caché con copia del bloque.",
+      "Con el orden en el que llegan al nodo origen o 'home' del bloque.",
+      "Ninguna de las otras respuestas es correcta.",
+      "Con el orden temporal en el que se han generado."
+    ],
+    "answer": 1,
+    "explanation": "Respueta\n  La respuesta correcta es la opción 'b':\n    El nodo encargado de controlar las lecturas de dicha dirección de memoria es su nodo origen, por lo que tan pronto como lleguen a este las actualizaciones, este las reflejará en las peticiones de lectura que se hagan al bloque que contiene dicha dirección de memoria.",
+    "source": "Examen Teoría Tema 3 2023-24 · Ejercicio 6"
+  },
+  {
+    "id": 27,
+    "bloque": "Teoría",
+    "tema": "Tema 3 - Memoria, coherencia y consistencia",
+    "subtema": "NUMA, coherencia y directorios",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "En un UMA con red bus y protocolo MSI, un controlador de cache al recibir del procesador de su nodo una lectura de una dirección de un bloque $B$ que tiene en estado `M`:",
+    "options": [
+      "No genera ningún paquete y el bloque continúa en estado `M`.",
+      "Genera paquete de `PtLecEx(B)` y el bloque pasa a estado `S`.",
+      "Genera paquete de `PtLec(B)` y el bloque pasa a estado `M`.",
+      "Genera paquete de `PtLec(B)` y el bloque pasa a estado `S`."
+    ],
+    "answer": 0,
+    "explanation": "Respueta\n  La respuesta correcta es la opción 'a':\n    Si el bloque se encuentra en estado 'M', entonces está válido en caché para leerlo, luego las opciones 'c' y 'd' no tienen sentido. Además, la opción 'b' no es ya que no tiene sentido invalidar la copia de $B$ en otras cachés, ya que al estar $B$ en estado 'M', sabemos ya que están invlidadas.",
+    "source": "Examen Teoría Tema 3 2023-24 · Ejercicio 7"
+  },
+  {
+    "id": 28,
+    "bloque": "Teoría",
+    "tema": "Tema 3 - Memoria, coherencia y consistencia",
+    "subtema": "Modelos de consistencia y sincronización",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "(A1) (se comparte enunciado y código con otra pregunta etiquetada con (A2))\nSe va a ejecutar en paralelo el código que se puede ver debajo. Se han añadido comentarios al código ((1), (2), (a), (b), (c) y (d)) que permiten identificar los accesos de lectura y escritura de los threads a memoria compartida:\n`(1) W(sm), (2) W(s2), (a) R(s2), (b) R(sm), (c) W(sm) y (d) R(sm)`\n```c\ns2 = 0;\n#pragma omp parallel num_threads(2)\n{\n    int i, smlocal=0, tid=omp_get_thread_num();\n    if(tid == 0){\n        for(i = 0; i R`, `W->W`, `R->R` y `R->W`?",
+    "options": [
+      "`(a) (a) (2) (1) (a) (b) (c)`",
+      "`(a) (2) (a) (c) (b) (1)`",
+      "`(1) (2) (a) (b) (c)`",
+      "`(a) (2) (b) (a) (c) (1)`"
+    ],
+    "answer": 1,
+    "explanation": "Respueta\n  La respuesta correcta es la opción 'b':\n    Independientemente de los órdenes que relaje el programa, sabemos que las instrucciones de acceso a memoria a una variable no pueden adelantar a otra relativa a la misma variable. Por tanto, independientemente de los órdenes que se relajen, la instrucción '(d)' no puede adelantar a '(1)', ni la instrucción '(c)' puede adelantar a '(b)'. Sin embargo, vemos cómo en la opción 'b' la instrucción '(c)' adelanta a '(b)', cosa que no puede suceder.",
+    "source": "Examen Teoría Tema 3 2023-24 · Ejercicio 8"
+  },
+  {
+    "id": 29,
+    "bloque": "Teoría",
+    "tema": "Tema 3 - Memoria, coherencia y consistencia",
+    "subtema": "Multithreading SMT",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Indicar cuál de las siguientes afirmaciones es correcta.",
+    "options": [
+      "Los núcleos SMT conmutan entre threads cada ciclo de reloj.",
+      "Los núcleos SMT ejecutan instrucciones de distintos threads concurrentemente.",
+      "Los núcleos SMT conmutan entre threads cada varios ciclos de reloj.",
+      "Los núcleos SMT ejecutan instrucciones de distintos threads en paralelo."
+    ],
+    "answer": 3,
+    "explanation": "Respueta\n  La respuesta correcta es la opción 'd':\n    Los núcleos SMT (Simultaneous Multithreading) no conmutan entre threads, sino que ejecutan dos threads a la vez, es decir, de forma paralela.",
+    "source": "Examen Teoría Tema 3 2023-24 · Ejercicio 9"
+  },
+  {
+    "id": 30,
+    "bloque": "Teoría",
+    "tema": "Tema 3 - Memoria, coherencia y consistencia",
+    "subtema": "Teoría - general",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "(A2) (se comparte enunciado y código con otra pregunta etiquetada con (A1))\nSe va a ejecutar en paralelo el código que se puede ver debajo (inicialmente `n=8`, `mitad=4`, `a[i]=i`). Se han añadido comentarios al código ((1), (2), (a), (b), (c) y (d)) que permiten identificar los accesos de lectura y escritura de los threads a memoria compartida:\n`(1) W(sm), (2) W(s2), (a) R(s2), (b) R(sm), (c) W(sm) y (d) R(sm)`\n```c\ns2 = 0;\n#pragma omp parallel num_threads(2)\n{\n    int i, smlocal=0, tid=omp_get_thread_num();\n    if(tid == 0){\n        for(i = 0; i R`? (las distintas posibilidades se han separado con comas)",
+    "options": [
+      "28, 6, 0.",
+      "28.",
+      "28, 22, 6, 0.",
+      "28, 6."
+    ],
+    "answer": 3,
+    "explanation": "Respueta\n  La respuesta correcta es la opción 'd':\n    Sabemos por el ejercicio 8 que '(d)' no puede adelantar a '(1)', luego lo que se imprima en '(d)' contendrá obligatoriamente la suma de la primera mitad del vector (6), luego las opciones 'a' y 'c' no son posibles, ya que contemplan al 0. Puede suceder que la hebra de tid 0 se ejecute complementamente antes que la otra, imprimiendo 6. Por otra parte, también puede suceder que se ejecute la hebra de tid 0, y que la otra se ejecute de forma que sume su aportación, imprimiendo 28. Descartamos la opción 'b' por ser la opción 'd' posible.",
+    "source": "Examen Teoría Tema 3 2023-24 · Ejercicio 10"
+  },
+  {
+    "id": 31,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico II - OpenMP variables y comunicación",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Si en una región paralela cada hebra tiene una instancia privada de una variable haciendo uso de la cláusula `private(variable)`, ¿qué valor tomarían dichas variables por defecto para cada hebra?",
+    "options": [
+      "El valor 0.",
+      "El valor que tuviera antes de entrar a la región paralela.",
+      "Un valor indefinido.",
+      "Ninguno de los anteriores."
+    ],
+    "answer": 2,
+    "explanation": "`private` crea copias privadas, pero no copia ni inicializa el valor previo. Para copiar el valor inicial se usaría `firstprivate`.",
+    "source": "Bloque Práctico II 2023-24 · Ejercicio 1"
+  },
+  {
+    "id": 32,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico II - OpenMP variables y comunicación",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Cuánto vale `n` al final?\n```c\nint n = 4;\n#pragma omp parallel for reduction(*:n)\nfor(int i = 1; i < 6; ++i){\n    n += i;\n}\n```",
+    "options": [
+      "Ninguna otra respuesta es correcta.",
+      "15.",
+      "21.",
+      "19."
+    ],
+    "answer": 0,
+    "explanation": "En una reducción multiplicativa, cada copia privada se inicializa a 1. Aunque dentro se suma `i`, al final se multiplican las contribuciones y también el valor original de `n`. El resultado indicado por las opciones no aparece; según la explicación proporcionada, el valor sería 2880.",
+    "source": "Bloque Práctico II 2023-24 · Ejercicio 2"
+  },
+  {
+    "id": 33,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico II - OpenMP variables y comunicación",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Cuál de las siguientes cláusulas copia el valor de una variable entre las distintas copias privadas que tienen las hebras de esa misma variable?",
+    "options": [
+      "`private`.",
+      "`shared`.",
+      "`firstprivate`.",
+      "`lastprivate`."
+    ],
+    "answer": 2,
+    "explanation": "`firstprivate` crea copias privadas inicializadas con el valor anterior a la región. `lastprivate` copia hacia fuera el valor de la última iteración/sección.",
+    "source": "Bloque Práctico II 2023-24 · Ejercicio 3"
+  },
+  {
+    "id": 34,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico II - OpenMP variables y comunicación",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Dada la siguiente porción de código, suponiendo que todas las posiciones de `M` y `v1` se inicializan a 1, ¿cuál es el contenido de `v2` después del bloque `parallel`?\n```c\nint i, j;\ndouble **M, *v1, *v2;\n#pragma omp parallel private(i) num_threads(16)\n{\n    for(i = 0; i < N; i++){\n        #pragma omp for reduction(+:v2[i])\n        for(j = 0; j < N; j++) v2[i] += M[i][j] * v1[j];\n    }\n}\n```",
+    "options": [
+      "Ninguna de las otras respuestas es correcta.",
+      "Un valor indefinido.",
+      "Todas las posiciones del vector `v2` con valor 0.",
+      "El resultado de multiplicar `M` por el vector `v1`."
+    ],
+    "answer": 3,
+    "explanation": "El `for` interno reparte el cálculo de cada fila y la reducción acumula correctamente `v2[i]`, obteniendo el producto matriz-vector.",
+    "source": "Bloque Práctico II 2023-24 · Ejercicio 4"
+  },
+  {
+    "id": 35,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico II - OpenMP variables y comunicación",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Con qué directiva se debe usar la cláusula `copyprivate`?",
+    "options": [
+      "`single`.",
+      "`atomic`.",
+      "Con cualquier directiva.",
+      "`master`."
+    ],
+    "answer": 0,
+    "explanation": "`copyprivate` se usa asociada a `single` para difundir a las demás hebras valores producidos por la hebra que ejecuta el bloque `single`.",
+    "source": "Bloque Práctico II 2023-24 · Ejercicio 5"
+  },
+  {
+    "id": 36,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico II - OpenMP variables y comunicación",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Cuál de las siguientes cláusulas implementa una función de comunicación colectiva?",
+    "options": [
+      "`reduction`.",
+      "Todas las respuestas son correctas.",
+      "`copyprivate`.",
+      "`firstprivate`."
+    ],
+    "answer": 1,
+    "explanation": "`reduction` comunica de todos a uno; `copyprivate` y `firstprivate` realizan difusión de uno a todos en los contextos correspondientes.",
+    "source": "Bloque Práctico II 2023-24 · Ejercicio 6"
+  },
+  {
+    "id": 37,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico II - OpenMP variables y comunicación",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Dado el siguiente fragmento de programa, ¿cuál es el valor de la variable `b` al salir de la región paralela?\n```c\nint i, a, b;\na = 2;\nb = 2;\n#pragma omp parallel for firstprivate(a,b) lastprivate(b)\nfor(i = a; i<12; i++)\n    b = i;\nreturn b;\n```",
+    "options": [
+      "12.",
+      "Indeterminado.",
+      "2.",
+      "Ninguno de los anteriores."
+    ],
+    "answer": 3,
+    "explanation": "`lastprivate(b)` copia fuera el valor de la última iteración lógica del bucle. La última iteración tiene `i = 11`, así que `b = 11`, que no aparece entre a, b ni c.",
+    "source": "Bloque Práctico II 2023-24 · Ejercicio 7"
+  },
+  {
+    "id": 38,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico II - OpenMP variables y comunicación",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Cuál de las siguientes afirmaciones es más correcta cuando incluimos simultáneamente `firstprivate(var1)` y `lastprivate(var1)` en una directiva combinada `parallel sections`?",
+    "options": [
+      "Se inicializan las copias privadas de `var1`.",
+      "Se crea una copia privada de `var1` para cada hebra.",
+      "Todas las respuestas son correctas.",
+      "Al salir del bloque paralelo `var1` toma el valor que tenía en la última `section`."
+    ],
+    "answer": 2,
+    "explanation": "`firstprivate` implica copia privada inicializada; `lastprivate` implica copia privada y copia final desde la última sección. Por tanto, todas las afirmaciones recogen parte del efecto.",
+    "source": "Bloque Práctico II 2023-24 · Ejercicio 8"
+  },
+  {
+    "id": 39,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico II - OpenMP variables y comunicación",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "En el siguiente código, ¿qué ocurre?\n```c\nint i, b[5];\nfor(i=0; i < 5; i++) b[i] = 0;\n#pragma omp parallel\n{\n    int j = 2;\n    #pragma omp for default(shared)\n    for(i=0; i < 5; i++)\n        b[i] = i + j;\n}\n```",
+    "options": [
+      "Habría un error de compilación porque el ámbito de `i` y `b` no está definido.",
+      "Habría un error de compilación porque `default` no es válida para `#pragma omp for`.",
+      "Habría que cambiar `default(shared)` por `default(none)`.",
+      "No habría errores de compilación."
+    ],
+    "answer": 1,
+    "explanation": "La cláusula `default` es válida en `parallel` o directivas combinadas con `parallel`, no en un `omp for` aislado.",
+    "source": "Bloque Práctico II 2023-24 · Ejercicio 9"
+  },
+  {
+    "id": 40,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico II - OpenMP variables y comunicación",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Dada la siguiente porción de código, suponiendo que todas las posiciones de `M` y `v1` se inicializan a 1, responde si es eficiente y qué contiene `v2` al terminar.\n```c\nfor(i=0; i < N; i++){\n    #pragma omp parallel for\n    for(j=0; j < N; j++)\n        #pragma omp atomic\n        v2[i] += M[i][j] * v1[j];\n}\n```",
+    "options": [
+      "El código no es eficiente y `v2` contiene el resultado correcto.",
+      "El código es eficiente y `v2` contiene el resultado correcto.",
+      "El código es eficiente y `v2` contiene un resultado indefinido.",
+      "El código no es eficiente y `v2` contiene un resultado indefinido."
+    ],
+    "answer": 0,
+    "explanation": "No es eficiente porque crea y destruye hebras en cada iteración del bucle exterior y además serializa la suma con `atomic`. El resultado sí es correcto porque la actualización compartida de `v2[i]` queda protegida.",
+    "source": "Bloque Práctico II 2023-24 · Ejercicio 10"
+  },
+  {
+    "id": 41,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico III - entorno de ejecución OpenMP",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Indica cómo se establecería el valor de la variable de control `thread_limit_var` a 8 utilizando una variable de entorno:",
+    "options": [
+      "`export OMP_THREAD_LIMIT=8`.",
+      "`export THREAD_LIMIT_VAR=8`.",
+      "`export NTHREADS_VAR=8`.",
+      "`export OMP_NUM_THREADS=8`."
+    ],
+    "answer": 0,
+    "explanation": "Las variables de entorno de OpenMP empiezan por `OMP_`. `OMP_NUM_THREADS` controla el número de hebras por defecto, no el límite global de hebras.",
+    "source": "Bloque Práctico III 2023-24 · Ejercicio 1"
+  },
+  {
+    "id": 42,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico III - entorno de ejecución OpenMP",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Qué función de OpenMP permite obtener el tiempo transcurrido del reloj en segundos?",
+    "options": [
+      "`clock_gettime()`.",
+      "`omp_get_time()`.",
+      "`omp_get_wtick()`.",
+      "`omp_get_wtime()`."
+    ],
+    "answer": 3,
+    "explanation": "`omp_get_wtime()` devuelve tiempo de reloj de pared en segundos. `omp_get_wtick()` devuelve la precisión o resolución del temporizador.",
+    "source": "Bloque Práctico III 2023-24 · Ejercicio 2"
+  },
+  {
+    "id": 43,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico III - entorno de ejecución OpenMP",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Indique cuál de las siguientes afirmaciones sobre el número de threads que se utilizan en una región paralela OpenMP es cierta:",
+    "options": [
+      "Si `if` es positivo se utiliza una única thread, independientemente de `num_threads()`.",
+      "El número de threads que fija `num_threads` prevalece ante `omp_set_num_threads()`.",
+      "`omp_set_num_threads()` prevalece ante cualquiera que sea el resultado de `if`.",
+      "El número de threads solo se puede fijar mediante cláusulas y variables de entorno."
+    ],
+    "answer": 1,
+    "explanation": "Si la cláusula `if` permite paralelismo, `num_threads()` tiene prioridad sobre `omp_set_num_threads()` y sobre `OMP_NUM_THREADS`.",
+    "source": "Bloque Práctico III 2023-24 · Ejercicio 3"
+  },
+  {
+    "id": 44,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico III - entorno de ejecución OpenMP",
+    "subtema": "OpenMP - planificación y reparto",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Indique el tipo de reparto que se realiza con `schedule(runtime)`:\n```c\n#pragma omp parallel for schedule(runtime) private(i,j)\nfor(i=0; i<2000; i++){\n    if(i==0)\n        omp_get_schedule(&kind, &chunk);\n    for(j=0; j<2000; j++)\n        c[i] = a[i][j] * b[j];\n}\n```",
+    "options": [
+      "El que indique `def-sched-var`.",
+      "El que indique `run-sched-var`.",
+      "El que indique `omp_set_dynamic()`.",
+      "El que indique `dyn-sched-var`."
+    ],
+    "answer": 1,
+    "explanation": "Con `schedule(runtime)` el reparto se toma de la variable interna `run-sched-var`, normalmente fijable mediante `OMP_SCHEDULE` o `omp_set_schedule`.",
+    "source": "Bloque Práctico III 2023-24 · Ejercicio 4"
+  },
+  {
+    "id": 45,
+    "bloque": "Prácticas",
+    "tema": "Bloque práctico III - entorno de ejecución OpenMP",
+    "subtema": "OpenMP - directivas, cláusulas y ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Cuál de las siguientes funciones se utiliza en OpenMP para obtener el número de hebras que se están usando en ese momento en una región paralela?",
+    "options": [
+      "`omp_get_max_threads()`.",
+      "`omp_set_num_threads()`.",
+      "`omp_get_thread_num()`.",
+      "`omp_get_num_threads()`."
+    ],
+    "answer": 3,
+    "explanation": "`omp_get_num_threads()` devuelve el número de hebras del equipo actual. `omp_get_thread_num()` devuelve el identificador de la hebra actual.",
+    "source": "Bloque Práctico III 2023-24 · Ejercicio 10"
+  },
+  {
+    "id": 46,
+    "bloque": "Teoría",
+    "tema": "Tema 2 - Programación paralela y paralelización",
+    "subtema": "Teoría - general",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "¿Qué tipo de herramientas de programación paralela requieren, en general, un menor esfuerzo por parte del programador?",
+    "options": [
+      "Compiladores paralelos.",
+      "Lenguajes paralelos.",
+      "APIs basadas en funciones y directivas del compilador.",
+      "APIs basadas en funciones."
+    ],
+    "answer": 0,
+    "explanation": "Los compiladores paralelos intentan convertir código secuencial en paralelo automáticamente, reduciendo el esfuerzo directo del programador.",
+    "source": "Teoría Tema 2 · Ejercicio 1"
+  },
+  {
+    "id": 47,
+    "bloque": "Teoría",
+    "tema": "Tema 2 - Programación paralela y paralelización",
+    "subtema": "Paralelización de programas y modelos de ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Después de analizar un programa se han obtenido 6 tareas con dependencias. Si el tiempo secuencial es de 5 s y el camino paralelo efectivo equivale al 80% del trabajo, ¿cuál sería su tiempo de ejecución paralelo?",
+    "options": [
+      "3.75 s.",
+      "3.85 s.",
+      "4 s.",
+      "4.25 s."
+    ],
+    "answer": 2,
+    "explanation": "Si el 100% tarda 5 s, el 80% tarda 4 s. La pregunta evalúa camino crítico y dependencias, no solo número de núcleos.",
+    "source": "Teoría Tema 2 · Ejercicio 3"
+  },
+  {
+    "id": 48,
+    "bloque": "Teoría",
+    "tema": "Tema 2 - Programación paralela y paralelización",
+    "subtema": "Paralelización de programas y modelos de ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Se quiere generar una imagen fractal calculando cada píxel, con carga alta y variable por píxel. ¿Qué estructura paralela sería más acertada para repartir el cálculo entre nodos de un multicomputador?",
+    "options": [
+      "Segmentación o flujo de datos.",
+      "Maestro-esclavo.",
+      "MPMD.",
+      "Divide y Vencerás."
+    ],
+    "answer": 1,
+    "explanation": "Hay muchas tareas independientes con coste variable. Un esquema maestro-esclavo permite asignación dinámica y equilibrio de carga.",
+    "source": "Teoría Tema 2 · Ejercicio 5"
+  },
+  {
+    "id": 49,
+    "bloque": "Teoría",
+    "tema": "Tema 2 - Programación paralela y paralelización",
+    "subtema": "Paralelización de programas y modelos de ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Suponga un bucle con número de iteraciones desconocido y carga variable dependiente de datos, ejecutado en procesadores conocidos y heterogéneos. ¿Qué mecanismos deberá implementar?",
+    "options": [
+      "Equilibrio de carga y asignación dinámica.",
+      "Asignación dinámica explícita sin balanceo.",
+      "Asignación estática y descomposición uniforme sin equilibrio.",
+      "Equilibrado de carga y asignación estática."
+    ],
+    "answer": 0,
+    "explanation": "La variabilidad de carga y la heterogeneidad hacen necesaria una asignación dinámica con equilibrio de carga.",
+    "source": "Teoría Tema 2 · Ejercicio 6"
+  },
+  {
+    "id": 50,
+    "bloque": "Teoría",
+    "tema": "Tema 2 - Programación paralela y paralelización",
+    "subtema": "Paralelización de programas y modelos de ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "Se desea repartir los datos de una matriz entre los diferentes procesadores, asignando partes de igual tamaño. ¿Qué operación de comunicación colectiva se debería implementar?",
+    "options": [
+      "Todos difunden.",
+      "Reducción.",
+      "Dispersión.",
+      "Todos combinan."
+    ],
+    "answer": 2,
+    "explanation": "La dispersión reparte desde un origen partes distintas de los datos hacia varios procesos.",
+    "source": "Teoría Tema 2 · Ejercicio 9"
+  },
+  {
+    "id": 51,
+    "bloque": "Teoría",
+    "tema": "Tema 2 - Programación paralela y paralelización",
+    "subtema": "Paralelización de programas y modelos de ejecución",
+    "dificultad": "Media",
+    "tipo": "Examen aplicado",
+    "question": "En el proceso de paralelización de un programa, la fase de descomposición en tareas incluye:",
+    "options": [
+      "Buscar tareas independientes y establecer un diagrama de dependencias.",
+      "Implementar la solución paralela ajustada a la máquina.",
+      "Asignar tareas a hebras/procesos y mapearlas a núcleos.",
+      "Ninguna otra respuesta es correcta."
+    ],
+    "answer": 0,
+    "explanation": "La descomposición identifica tareas y dependencias. La asignación/mapeo y la implementación son fases posteriores.",
+    "source": "Teoría Tema 2 · Ejercicio 10"
+  }
+]
