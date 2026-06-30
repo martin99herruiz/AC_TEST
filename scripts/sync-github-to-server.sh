@@ -25,10 +25,10 @@ Uso:
   bash scripts/sync-github-to-server.sh DIRECTORIO_PUBLICO
 
 Ejemplo:
-  bash scripts/sync-github-to-server.sh /var/www/html/ac
+  bash scripts/sync-github-to-server.sh /var/www/html/
 
 Resultado:
-  /var/www/html/ac/test-ac.html
+  /var/www/html/test-ac.html
   /var/www/html/recap.html
 
 Dependencias del servidor: git, pandoc, flock e install (coreutils).
@@ -52,10 +52,9 @@ done
 
 # Normaliza las rutas antes de crear temporales o publicar.
 PUBLIC_DIR="$(realpath -m -- "$PUBLIC_DIR")"
-RECAP_DIR="$(dirname -- "$PUBLIC_DIR")"
+RECAP_DIR="$PUBLIC_DIR"
 CHECKOUT_DIR="$(realpath -m -- "$CHECKOUT_DIR")"
 [[ "$PUBLIC_DIR" != '/' ]] || die 'DIRECTORIO_PUBLICO no puede ser /'
-[[ "$RECAP_DIR" != '/' ]] || die 'recap.html no puede publicarse directamente en /'
 
 install -d -m 0755 -- "$(dirname -- "$CHECKOUT_DIR")"
 
