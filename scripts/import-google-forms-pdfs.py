@@ -427,6 +427,12 @@ CUSTOM_SINGLE_OPTIONS = {
         "La primera barrera es necesaria y la segunda redundante, ya que `single` espera a las demás hebras antes de entrar.",
         "Cambiar `critical` por `atomic` introduce una carrera porque `atomic` no admite actualizaciones de suma.",
     ],
+    ("P", 28): [
+        "Abrir `parallel private(j)` y hacer que todas las hebras recorran el mismo bucle exterior i compartido; dentro, usar `omp for reduction(+:v2[i])` sobre j.",
+        "Usar `parallel for private(j)` sobre el bucle exterior i y ejecutar secuencialmente todas las columnas j de cada fila.",
+        "Abrir `parallel private(i,j)` sin `omp for`, de modo que cada hebra recorra por completo las N filas y las N columnas.",
+        "Abrir `parallel private(i)`; hacer que todas las hebras avancen coordinadamente por i y, para cada fila, repartir j con `omp for reduction(+:v2[i])`.",
+    ],
     ("P", 53): [
         "Recalcular ambos sumatorios completos para cada repetición y seleccionar con un `if`.",
         "Recalcular ambos sumatorios en un único bucle para cada repetición y usar `std::min`.",
@@ -484,6 +490,9 @@ QUESTION_SUFFIX = {
 }
 
 QUESTION_REPLACE = {
+    ("T", 60): "En el código OpenMP del cálculo de pi, `parallel` aparece en morado, `omp for` en naranja, `reduction` en verde y `schedule(dynamic)` en amarillo. ¿Qué correspondencia con las fases de paralelización es correcta?",
+    ("T", 105): "(A) El cauce de un superescalar tiene cuatro etapas: IF (1 ciclo, ancho 3 instrucciones/ciclo), ID (1 ciclo, ancho 3), EX (latencia de 1 a 4 ciclos según la unidad) y WB (1 ciclo, retirada de hasta 3 instrucciones/ciclo desde el ROB). Hay una unidad de carga segmentada en dos etapas, una unidad de almacenamiento de un ciclo, dos unidades ADD de un ciclo, una unidad MUL segmentada en cuatro etapas y una unidad de saltos de un ciclo. La emisión es desordenada, el ROB y la ventana centralizada no limitan el número de entradas y pueden emitirse hasta tres instrucciones por ciclo. ¿Cuántos ciclos tarda en completarse el cauce?",
+    ("P", 7): "¿Qué orden crea un único proceso OpenMP con 12 hebras, asignando cada hebra a un core físico distinto de un nodo atcgrid[1-3]?",
     ("P", 36): "¿Qué relación correcta existe entre directivas y cláusulas de OpenMP?",
     ("P", 58): "¿Qué afirmación general sobre la optimización de código es correcta?",
 }
@@ -684,9 +693,28 @@ def write_preserving_repository_format(bank: list[dict]) -> None:
     base_json = subprocess.check_output(
         ["git", "show", "HEAD:banco-preguntas-ac.json"], cwd=ROOT, text=True
     )
-    base_count = len(json.loads(base_json))
-    additions_json = json.dumps(bank[base_count:], ensure_ascii=False, indent=4)
-    combined_json = base_json.rstrip()[:-1].rstrip() + ",\n" + additions_json[2:] + "\n"
+    base_bank = json.loads(base_json)
+    base_count = len(base_bank)
+    if base_count < len(bank):
+        additions_json = json.dumps(bank[base_count:], ensure_ascii=False, indent=4)
+        combined_json = base_json.rstrip()[:-1].rstrip() + ",\n" + additions_json[2:] + "\n"
+    elif base_count == len(bank):
+        combined_json = base_json
+        for old, new in zip(base_bank, bank):
+            if old == new:
+                continue
+            object_text = "\n".join("    " + line for line in json.dumps(new, ensure_ascii=False, indent=4).splitlines())
+            id_marker = f'\n        "id": {new["id"]}\n'
+            id_position = combined_json.find(id_marker)
+            if id_position < 0:
+                raise RuntimeError(f"No se pudo actualizar el objeto con id {new['id']}")
+            object_start = combined_json.rfind("\n    {", 0, id_position) + 1
+            object_end = combined_json.find("\n    }", id_position) + len("\n    }")
+            if object_start <= 0 or object_end < len("\n    }"):
+                raise RuntimeError(f"No se pudieron delimitar los datos del objeto con id {new['id']}")
+            combined_json = combined_json[:object_start] + object_text + combined_json[object_end:]
+    else:
+        raise RuntimeError(f"HEAD contiene {base_count} preguntas pero el banco solo {len(bank)}")
     JSON_PATH.write_text(combined_json, encoding="utf-8")
 
     base_html = subprocess.check_output(
@@ -701,13 +729,21 @@ def write_preserving_repository_format(bank: list[dict]) -> None:
 
 
 def main() -> None:
-    bank = json.loads(JSON_PATH.read_text(encoding="utf-8"))
+    try:
+        bank = json.loads(JSON_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        bank = json.loads(
+            subprocess.check_output(
+                ["git", "show", "HEAD:banco-preguntas-ac.json"], cwd=ROOT, text=True
+            )
+        )
     if any("AutoTests de AC - Todos los temas · Pregunta" in q.get("source", "") for q in bank):
         for question in bank:
-            if question.get("source", "").startswith("Tests de AC - Todas las bps · Pregunta 36 "):
-                question["question"] = QUESTION_REPLACE[("P", 36)]
-            elif question.get("source", "").startswith("Tests de AC - Todas las bps · Pregunta 58 "):
-                question["question"] = QUESTION_REPLACE[("P", 58)]
+            for key, title in QUESTION_REPLACE.items():
+                source_name = "AutoTests de AC - Todos los temas" if key[0] == "T" else "Tests de AC - Todas las bps"
+                if question.get("source", "").startswith(f"{source_name} · Pregunta {key[1]} "):
+                    question["question"] = title + QUESTION_SUFFIX.get(key, "")
+                    break
             for key, options in CUSTOM_SINGLE_OPTIONS.items():
                 source_name = "AutoTests de AC - Todos los temas" if key[0] == "T" else "Tests de AC - Todas las bps"
                 if question.get("source", "").startswith(f"{source_name} · Pregunta {key[1]} "):

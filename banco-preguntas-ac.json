@@ -9399,7 +9399,7 @@
         "subtema": "Lección 5 - Descomposición, asignación y sobrecarga",
         "dificultad": "Alta",
         "tipo": "Opción múltiple",
-        "question": "Elige la redacción correcta:",
+        "question": "En el código OpenMP del cálculo de pi, `parallel` aparece en morado, `omp for` en naranja, `reduction` en verde y `schedule(dynamic)` en amarillo. ¿Qué correspondencia con las fases de paralelización es correcta?",
         "options": [
             "Crear/terminar: morado; localizar: naranja; comunicar/sincronizar: verde; agrupar/asignar: amarillo.",
             "Crear/terminar: naranja; localizar: morado; comunicar/sincronizar: amarillo; agrupar/asignar: verde.",
@@ -10155,7 +10155,7 @@
         "subtema": "Planificación dinámica y predicción de saltos",
         "dificultad": "Alta",
         "tipo": "Opción múltiple",
-        "question": "(A) EI cauce de un superescaIar tiene Ias siguientes 4 etapas: IF (1 cicIo = 1 c para cada instrucción) capaz de procesar 3 instrucciones por cicIo (i/c), ID (1 c) capaz de procesar 3 i/c, EX (de 1c a 4 c de Iatencia dependiendo de Ia unidad) y WB (1 c) capaz de retirar deI buffer de reorden (ROB) 3 i/c (no hay etapa para escribir en eI ROB). Unidades: 1 para carga de memoria segmentada en dos etapas de 1 c cada una, 1 de aImacenamiento en memoria (1 c), 2 unidades para ADD  (1 c), una para MUL segmentada en 4 etapas de 1 c cada una, y 1 para saItos (1 c). Tenga en cuenta que Ia emisión es desordenada, que no hay Iímite en Ias entradas deI ROB y de Ia ventana de instrucciones centraIizada y que se pueden emitir un máximo de 3 i/c. ¿Cuantos ciclos tarda en completarse el cauce?\n\nSecuencia: `1 LD r1,0(r2); 2 MUL r6,r4,r2; 3 LD r8,0(r3); 4 ADD r1,r8,r1; 5 ADD r6,r6,r1; 6 MUL r7,r6,r2; 7 LD r8,0(r4); 8 ADD r9,r8,r1`.",
+        "question": "(A) El cauce de un superescalar tiene cuatro etapas: IF (1 ciclo, ancho 3 instrucciones/ciclo), ID (1 ciclo, ancho 3), EX (latencia de 1 a 4 ciclos según la unidad) y WB (1 ciclo, retirada de hasta 3 instrucciones/ciclo desde el ROB). Hay una unidad de carga segmentada en dos etapas, una unidad de almacenamiento de un ciclo, dos unidades ADD de un ciclo, una unidad MUL segmentada en cuatro etapas y una unidad de saltos de un ciclo. La emisión es desordenada, el ROB y la ventana centralizada no limitan el número de entradas y pueden emitirse hasta tres instrucciones por ciclo. ¿Cuántos ciclos tarda en completarse el cauce?\n\nSecuencia: `1 LD r1,0(r2); 2 MUL r6,r4,r2; 3 LD r8,0(r3); 4 ADD r1,r8,r1; 5 ADD r6,r6,r1; 6 MUL r7,r6,r2; 7 LD r8,0(r4); 8 ADD r9,r8,r1`.",
         "options": [
             "11",
             "15",
@@ -10371,7 +10371,7 @@
         "subtema": "SLURM y arquitectura de atcgrid",
         "dificultad": "Alta",
         "tipo": "Opción múltiple",
-        "question": "¿Cuál de las siguientes órdenes usaría para que se cree un único proceso con el código paraleloHelloOMP que use 12 hebras, de forma cada hebra distinto de un nodo de cómputo de atcgrid[1-3]?",
+        "question": "¿Qué orden crea un único proceso OpenMP con 12 hebras, asignando cada hebra a un core físico distinto de un nodo atcgrid[1-3]?",
         "options": [
             "srun -p ac --account=ac -n1 --cpus-per-task=12 --hint=nomultithread HelloOMP",
             "srun -p ac --account=ac -n1 HelloOMP",
@@ -10715,13 +10715,13 @@
         "tipo": "Opción múltiple",
         "question": "Asumiendo que v2 de dimensión N y que todos sus elementos están inicializados a cero, ¿cuál de los siguientes códigos calcula de forma correcta el producto de la matriz m (dimensión NxN) por el vector v1 (dimensión N) paralelizando el bucle que recorre las columnas?\n\nSe desea paralelizar el índice de columnas j; el resultado `v2[i]` es compartido y debe combinarse mediante una reducción.",
         "options": [
-            "#pragma omp parallel private(j) for(i=0;i<N;i++){",
-            "b)",
-            "c)",
-            "d)"
+            "Abrir `parallel private(j)` y hacer que todas las hebras recorran el mismo bucle exterior i compartido; dentro, usar `omp for reduction(+:v2[i])` sobre j.",
+            "Usar `parallel for private(j)` sobre el bucle exterior i y ejecutar secuencialmente todas las columnas j de cada fila.",
+            "Abrir `parallel private(i,j)` sin `omp for`, de modo que cada hebra recorra por completo las N filas y las N columnas.",
+            "Abrir `parallel private(i)`; hacer que todas las hebras avancen coordinadamente por i y, para cada fila, repartir j con `omp for reduction(+:v2[i])`."
         ],
         "answer": 3,
-        "explanation": "Respuesta correcta: «d)». La distinción aplicada corresponde a cláusulas de datos y reducciones según el temario.",
+        "explanation": "Respuesta correcta: «Abrir `parallel private(i)`; hacer que todas las hebras avancen coordinadamente por i y, para cada fila, repartir j con `omp for reduction(+:v2[i])`.». La distinción aplicada corresponde a cláusulas de datos y reducciones según el temario.",
         "source": "Tests de AC - Todas las bps · Pregunta 28 · página 12",
         "id": 615
     },
